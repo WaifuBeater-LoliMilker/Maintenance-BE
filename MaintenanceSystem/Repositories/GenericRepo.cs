@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Dapper;
-using MesApi.Models;
+﻿using Dapper;
+using MaintenanceSystem.Models.Context;
 using Microsoft.EntityFrameworkCore;
-using MySqlConnector;
+using System.Data;
+using System.Linq.Expressions;
+
+namespace MaintenanceSystem.Repositories;
 
 public class GenericRepo : IGenericRepo
 {
-    private readonly rtc_mes_systemContext _context;
+    private readonly maintenance_systemContext _context;
     private readonly IDbConnection _dbConnection;
 
-    public GenericRepo(rtc_mes_systemContext context, IDbConnection dbConnection)
+    public GenericRepo(maintenance_systemContext context, IDbConnection dbConnection)
     {
         _context = context;
         _dbConnection = dbConnection;
@@ -61,6 +58,7 @@ public class GenericRepo : IGenericRepo
         await _context.SaveChangesAsync();
         return true;
     }
+
     // Xóa thực thể theo ID
     public async Task<bool> DeleteById<T>(int id) where T : class
     {
@@ -74,6 +72,7 @@ public class GenericRepo : IGenericRepo
         await _context.SaveChangesAsync();
         return true;
     }
+
     public async Task<bool> DeleteByExpression<T>(Expression<Func<T, bool>> predicate) where T : class
     {
         try
@@ -129,7 +128,6 @@ public class GenericRepo : IGenericRepo
         var parameters = GetSqlParameters(parameterNames, parameterValues);
 
         return await _dbConnection.ExecuteAsync(procedureName, parameters, commandType: CommandType.StoredProcedure);
-
     }
 
     // Phương thức chuyển đổi tên tham số và giá trị thành danh sách các MySqlParameter
@@ -149,5 +147,4 @@ public class GenericRepo : IGenericRepo
 
         return parameters;
     }
-
 }
