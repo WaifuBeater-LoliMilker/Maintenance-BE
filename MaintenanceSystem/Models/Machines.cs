@@ -15,6 +15,8 @@ public partial class Machines
 
     public string SerialNumber { get; set; }
 
+    public int? StationId { get; set; }
+
     public string CreatedBy { get; set; }
 
     public DateTime? CreatedDate { get; set; }

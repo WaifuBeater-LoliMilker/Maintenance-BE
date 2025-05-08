@@ -12,4 +12,6 @@ public partial class Stations
     public string Code { get; set; }
 
     public string Name { get; set; }
+
+    public int? LineId { get; set; }
 }

@@ -72,6 +72,7 @@ public partial class maintenance_systemContext : DbContext
             entity.Property(e => e.Name)
                 .HasMaxLength(200)
                 .HasColumnName("name");
+            entity.Property(e => e.ZoneId).HasColumnName("zone_id");
         });
 
         modelBuilder.Entity<MachineMaintenance>(entity =>
@@ -146,6 +147,7 @@ public partial class maintenance_systemContext : DbContext
                 .IsRequired()
                 .HasMaxLength(100)
                 .HasColumnName("serial_number");
+            entity.Property(e => e.StationId).HasColumnName("station_id");
             entity.Property(e => e.UpdatedBy)
                 .HasMaxLength(45)
                 .HasColumnName("updated_by");
@@ -198,6 +200,7 @@ public partial class maintenance_systemContext : DbContext
             entity.Property(e => e.Code)
                 .HasMaxLength(50)
                 .HasColumnName("code");
+            entity.Property(e => e.LineId).HasColumnName("line_id");
             entity.Property(e => e.Name)
                 .HasMaxLength(200)
                 .HasColumnName("name");
@@ -267,6 +270,7 @@ public partial class maintenance_systemContext : DbContext
             entity.Property(e => e.Code)
                 .HasMaxLength(50)
                 .HasColumnName("code");
+            entity.Property(e => e.FactoryId).HasColumnName("factory_id");
             entity.Property(e => e.Name)
                 .HasMaxLength(200)
                 .HasColumnName("name");

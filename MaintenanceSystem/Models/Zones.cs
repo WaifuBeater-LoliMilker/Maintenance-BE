@@ -12,4 +12,6 @@ public partial class Zones
     public string Code { get; set; }
 
     public string Name { get; set; }
+
+    public int? FactoryId { get; set; }
 }
