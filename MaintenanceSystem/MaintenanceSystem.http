@@ -1,0 +1,6 @@
+@MaintenanceSystem_HostAddress = http://localhost:5276
+
+GET {{MaintenanceSystem_HostAddress}}/
+Accept: application/json
+
+###
