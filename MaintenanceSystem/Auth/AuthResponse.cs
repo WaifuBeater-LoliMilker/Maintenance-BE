@@ -1,0 +1,12 @@
+﻿using MaintenanceSystem.Models;
+
+namespace MaintenanceSystem.Auth
+{
+    public class AuthResponse(Users user, string token)
+    {
+        public string Username { get; set; } = user.Username;
+        public string Fullname { get; set; } = user.Fullname;
+        public string? AccessToken { get; set; } = token;
+        //public string? RefreshToken { get; set; } = refreshToken;
+    }
+}

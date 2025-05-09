@@ -16,7 +16,9 @@ public partial class Users
     public string Fullname { get; set; }
 
     /// <summary>
-    /// 1 = admin, 2 = manager, 3 = normal user
+    /// 0 = manager, 1 = normal user
     /// </summary>
     public int? Role { get; set; }
+
+    public bool? IsAdmin { get; set; }
 }

@@ -24,7 +24,7 @@ public class GenericRepo : IGenericRepo
     }
 
     // Tìm thực thể theo ID (không theo dõi)
-    public async Task<T> GetById<T>(int id) where T : class
+    public async Task<T?> GetById<T>(int id) where T : class
     {
         var entity = await _context.Set<T>().FindAsync(id);
         if (entity != null)
@@ -92,7 +92,7 @@ public class GenericRepo : IGenericRepo
 
             return true;
         }
-        catch (Exception ex)
+        catch
         {
             return false;
         }
@@ -107,7 +107,7 @@ public class GenericRepo : IGenericRepo
             .ToListAsync();
     }
 
-    public async Task<T> FindModel<T>(Expression<Func<T, bool>> predicate) where T : class
+    public async Task<T?> FindModel<T>(Expression<Func<T, bool>> predicate) where T : class
     {
         var entity = await _context.Set<T>()
                 .AsNoTracking() // Không theo dõi

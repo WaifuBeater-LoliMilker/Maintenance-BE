@@ -26,6 +26,8 @@ public partial class maintenance_systemContext : DbContext
 
     public virtual DbSet<MaintenanceTasks> MaintenanceTasks { get; set; }
 
+    public virtual DbSet<RefreshTokens> RefreshTokens { get; set; }
+
     public virtual DbSet<Stations> Stations { get; set; }
 
     public virtual DbSet<UsageLogs> UsageLogs { get; set; }
@@ -188,6 +190,29 @@ public partial class maintenance_systemContext : DbContext
                 .HasColumnName("updated_date");
         });
 
+        modelBuilder.Entity<RefreshTokens>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("refresh_tokens");
+
+            entity.HasIndex(e => e.UserId, "user_id_UNIQUE").IsUnique();
+
+            entity.Property(e => e.CreatedDate)
+                .HasColumnType("datetime")
+                .HasColumnName("created_date");
+            entity.Property(e => e.ExpireDate)
+                .HasColumnType("datetime")
+                .HasColumnName("expire_date");
+            entity.Property(e => e.IsRevoked)
+                .HasComment("0 = active, 1 = revoked (invalidated)")
+                .HasColumnName("is_revoked");
+            entity.Property(e => e.Token)
+                .HasMaxLength(200)
+                .HasColumnName("token");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+        });
+
         modelBuilder.Entity<Stations>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
@@ -245,12 +270,13 @@ public partial class maintenance_systemContext : DbContext
             entity.Property(e => e.Fullname)
                 .HasMaxLength(200)
                 .HasColumnName("fullname");
+            entity.Property(e => e.IsAdmin).HasColumnName("is_admin");
             entity.Property(e => e.Password)
                 .IsRequired()
                 .HasMaxLength(100)
                 .HasColumnName("password");
             entity.Property(e => e.Role)
-                .HasComment("1 = admin, 2 = manager, 3 = normal user")
+                .HasComment("0 = manager, 1 = normal user")
                 .HasColumnName("role");
             entity.Property(e => e.Username)
                 .IsRequired()

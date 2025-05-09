@@ -4,7 +4,7 @@ public interface IGenericRepo
 {
     Task<List<T>> GetAll<T>() where T : class;
 
-    Task<T> GetById<T>(int id) where T : class;
+    Task<T?> GetById<T>(int id) where T : class;
 
     Task<T> Insert<T>(T entity) where T : class;
 
@@ -18,7 +18,7 @@ public interface IGenericRepo
 
     Task<List<T>> FindByExpression<T>(Expression<Func<T, bool>> predicate) where T : class;
 
-    Task<T> FindModel<T>(Expression<Func<T, bool>> predicate) where T : class;
+    Task<T?> FindModel<T>(Expression<Func<T, bool>> predicate) where T : class;
 
     Task<List<T>> ProcedureToList<T>(string procedureName, string[] parameterName, object[] parameterValue) where T : class;
 
