@@ -192,12 +192,15 @@ public partial class maintenance_systemContext : DbContext
 
         modelBuilder.Entity<RefreshTokens>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("refresh_tokens");
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("refresh_tokens");
+
+            entity.HasIndex(e => e.Token, "token_UNIQUE").IsUnique();
 
             entity.HasIndex(e => e.UserId, "user_id_UNIQUE").IsUnique();
 
+            entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedDate)
                 .HasColumnType("datetime")
                 .HasColumnName("created_date");
@@ -208,6 +211,7 @@ public partial class maintenance_systemContext : DbContext
                 .HasComment("0 = active, 1 = revoked (invalidated)")
                 .HasColumnName("is_revoked");
             entity.Property(e => e.Token)
+                .IsRequired()
                 .HasMaxLength(200)
                 .HasColumnName("token");
             entity.Property(e => e.UserId).HasColumnName("user_id");

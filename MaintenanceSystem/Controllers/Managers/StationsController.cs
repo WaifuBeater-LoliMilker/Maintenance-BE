@@ -1,10 +1,12 @@
 ﻿using MaintenanceSystem.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MaintenanceSystem.Controllers
+namespace MaintenanceSystem.Controllers.Managers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Manager")]
     public class StationsController : ControllerBase
     {
         private IGenericRepo _repo;

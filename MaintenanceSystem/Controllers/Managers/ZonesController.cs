@@ -1,10 +1,12 @@
 ﻿using MaintenanceSystem.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MaintenanceSystem.Controllers
+namespace MaintenanceSystem.Controllers.Managers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Manager")]
     public class ZonesController : ControllerBase
     {
         private IGenericRepo _repo;
@@ -73,7 +75,7 @@ namespace MaintenanceSystem.Controllers
         {
             var existing = await _repo.GetById<Zones>(id);
             if (existing == null) return NotFound($"Zone with ID {id} not found.");
-            var deleted = await _repo.Delete<Zones>(existing);
+            var deleted = await _repo.Delete(existing);
             return Ok(deleted);
         }
     }

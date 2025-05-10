@@ -23,7 +23,23 @@ namespace MaintenanceSystem.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] AuthRequest req)
         {
+            if (HttpContext.Items["User"] != null) return Redirect("/home");
             var (res, refreshToken) = await _authService.Authenticate(req);
+            var existedToken = await _repo.FindModel<RefreshTokens>(t => t.UserId == res.UserId);
+            var newRefreshToken = new RefreshTokens()
+            {
+                UserId = res.UserId,
+                Token = refreshToken,
+                CreatedDate = DateTime.UtcNow,
+                ExpireDate = DateTime.UtcNow.AddDays(15),
+                IsRevoked = false
+            };
+            if (existedToken != null)
+            {
+                newRefreshToken.Id = existedToken.Id;
+                await _repo.Update<RefreshTokens>(newRefreshToken);
+            }
+            else await _repo.Insert<RefreshTokens>(newRefreshToken);
             Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
             {
                 HttpOnly = true,
@@ -58,6 +74,23 @@ namespace MaintenanceSystem.Controllers
             });
 
             return Ok(new { message = "See ya later, aligator!" });
+        }
+        [HttpPost("refresh")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Refresh()
+        {
+            if (HttpContext.Items["User"] != null) return Accepted(); // still valid => do nothing
+            var refreshToken = Request.Cookies["refreshToken"];
+            if (refreshToken == null) return Unauthorized("Không gửi refresh token à??");
+            var existedToken = await _repo.FindModel<RefreshTokens>(t => t.Token == refreshToken);
+            if (existedToken == null) return Unauthorized("Refresh token không có trong db nhé");
+            if (existedToken.ExpireDate < DateTime.UtcNow) return Unauthorized("Đăng nhập lại đê");
+            else
+            {
+                var user = await _repo.GetById<Users>(existedToken.UserId);
+                var newSessionToken = _authService.GenerateAccessToken(user!);
+                return Ok(newSessionToken);
+            }
         }
     }
 }
