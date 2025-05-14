@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,12 +35,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
             ValidateIssuer = false,
             ValidateAudience = false,
+            RoleClaimType = ClaimTypes.Role,
             ClockSkew = TimeSpan.Zero
         };
     });
 
 builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("ManagerOnly", policy => policy.RequireRole("Manager"));
+    .AddPolicy("ManagersOnly", policy => policy.RequireRole("Managers"));
 //.AddPolicy("MustBeRegistered", policy => policy.RequireClaim("UserType", "Registered"));
 
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -59,6 +61,11 @@ builder.Services.AddCors();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+var filesPath = Path.Combine(builder.Environment.ContentRootPath, "Files");
+if (!Directory.Exists(filesPath))
+{
+    Directory.CreateDirectory(filesPath);
+}
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "Files")),
@@ -69,7 +76,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+app.UseCors(builder => builder.WithOrigins("http://localhost:4200")
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .AllowCredentials());
 
 app.UseMiddleware<JwtMiddleware>();
 

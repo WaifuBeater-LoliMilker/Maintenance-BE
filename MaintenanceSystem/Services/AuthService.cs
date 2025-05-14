@@ -45,7 +45,7 @@ public class AuthService : IAuthService
     {
         var user = await _genericRepo.FindModel<Users>
             (u => u.Username == model.Username && u.Password == model.Password)
-            ?? throw new Exception("USER_NOT_FOUND");
+            ?? throw new NullReferenceException("User không tồn tại");
         string token = GenerateAccessToken(user);
         string refreshToken = GenerateRefreshToken();
         AuthResponse res = new(user, token);
@@ -62,7 +62,7 @@ public class AuthService : IAuthService
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(ClaimTypes.Name, user.Fullname),
-            new Claim(ClaimTypes.Role, user.Role == 0 ? "Manager" : "User"),
+            new Claim(ClaimTypes.Role, user.Role == 0 ? "Managers" : "Users"),
         };
 
         var token = new JwtSecurityToken(

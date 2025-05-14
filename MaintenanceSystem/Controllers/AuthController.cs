@@ -23,31 +23,42 @@ namespace MaintenanceSystem.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] AuthRequest req)
         {
-            if (HttpContext.Items["User"] != null) return Redirect("/home");
-            var (res, refreshToken) = await _authService.Authenticate(req);
-            var existedToken = await _repo.FindModel<RefreshTokens>(t => t.UserId == res.UserId);
-            var newRefreshToken = new RefreshTokens()
+            try
             {
-                UserId = res.UserId,
-                Token = refreshToken,
-                CreatedDate = DateTime.UtcNow,
-                ExpireDate = DateTime.UtcNow.AddDays(15),
-                IsRevoked = false
-            };
-            if (existedToken != null)
-            {
-                newRefreshToken.Id = existedToken.Id;
-                await _repo.Update<RefreshTokens>(newRefreshToken);
+                if (HttpContext.Items["User"] != null) return Redirect("/home");
+                var (res, refreshToken) = await _authService.Authenticate(req);
+                var existedToken = await _repo.FindModel<RefreshTokens>(t => t.UserId == res.UserId);
+                var newRefreshToken = new RefreshTokens()
+                {
+                    UserId = res.UserId,
+                    Token = refreshToken,
+                    CreatedDate = DateTime.UtcNow,
+                    ExpireDate = DateTime.UtcNow.AddDays(15),
+                    IsRevoked = false
+                };
+                if (existedToken != null)
+                {
+                    newRefreshToken.Id = existedToken.Id;
+                    await _repo.Update<RefreshTokens>(newRefreshToken);
+                }
+                else await _repo.Insert<RefreshTokens>(newRefreshToken);
+                Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTime.UtcNow.AddDays(15)
+                });
+                return Ok(res);
             }
-            else await _repo.Insert<RefreshTokens>(newRefreshToken);
-            Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+            catch (NullReferenceException)
             {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddDays(15)
-            });
-            return Ok(res);
+                return Unauthorized("Tên đăng nhập hoặc mật khẩu không đúng");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpPost("logout")]
@@ -91,6 +102,12 @@ namespace MaintenanceSystem.Controllers
                 var newSessionToken = _authService.GenerateAccessToken(user!);
                 return Ok(newSessionToken);
             }
+        }
+        [HttpPost("role")]
+        public IActionResult Role()
+        {
+            var user = HttpContext.Items["User"] as Users;
+            return Ok(new { role = user!.Role == 0 ? "managers" : "users" });
         }
     }
 }

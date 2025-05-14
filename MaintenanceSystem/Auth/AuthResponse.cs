@@ -8,6 +8,7 @@ namespace MaintenanceSystem.Auth
         public string Username { get; set; } = user.Username;
         public string Fullname { get; set; } = user.Fullname;
         public string? AccessToken { get; set; } = token;
+        public string Redirect { get; set; } = user.Role == 0 ? "/managers" : "/users";
         //public string? RefreshToken { get; set; } = refreshToken;
     }
 }

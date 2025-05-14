@@ -6,7 +6,7 @@ namespace MaintenanceSystem.Controllers.Managers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Manager")]
+    [Authorize(Roles = "Managers")]
     public class FactoriesController : ControllerBase
     {
         private IGenericRepo _repo;

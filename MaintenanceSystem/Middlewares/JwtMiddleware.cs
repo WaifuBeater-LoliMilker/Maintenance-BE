@@ -52,13 +52,19 @@ public class JwtMiddleware
             //var fullName = jwtToken.Claims.First(x => x.Type == ClaimTypes.Name).Value;
 
             // attach user to context on successful jwt validation
-            var user = await repo.GetById<Users>(userId);
+            var user = await repo.GetById<Users>(userId) ?? throw new NullReferenceException();
             context.Items["User"] = user;
         }
         catch (SecurityTokenExpiredException)
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             await context.Response.WriteAsync("Access token expired");
+            return;
+        }
+        catch (NullReferenceException)
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await context.Response.WriteAsync("User not found");
             return;
         }
         catch
