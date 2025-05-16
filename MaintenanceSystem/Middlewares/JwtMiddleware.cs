@@ -3,6 +3,7 @@ namespace MaintenanceSystem.Middlewares;
 using MaintenanceSystem.Auth;
 using MaintenanceSystem.Models;
 using MaintenanceSystem.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -21,8 +22,13 @@ public class JwtMiddleware
 
     public async Task Invoke(HttpContext context, IAuthService userService, IGenericRepo repo)
     {
+        var skip = context.GetEndpoint()?.Metadata.GetMetadata<SkipJWTMiddlewareAttribute>() != null;
+        if (skip)
+        {
+            await _next(context);
+            return;
+        }
         var token = context.Request.Headers.Authorization.FirstOrDefault()?.Split(" ").Last();
-
         if (token != null)
             await AttachUserToContext(context, userService, token, repo);
 

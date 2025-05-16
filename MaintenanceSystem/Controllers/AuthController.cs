@@ -25,7 +25,7 @@ namespace MaintenanceSystem.Controllers
         {
             try
             {
-                if (HttpContext.Items["User"] != null) return Redirect("/home");
+                if (HttpContext.Items["User"] != null) return Accepted();
                 var (res, refreshToken) = await _authService.Authenticate(req);
                 var existedToken = await _repo.FindModel<RefreshTokens>(t => t.UserId == res.UserId);
                 var newRefreshToken = new RefreshTokens()
@@ -88,6 +88,7 @@ namespace MaintenanceSystem.Controllers
         }
         [HttpPost("refresh")]
         [AllowAnonymous]
+        [SkipJWTMiddleware]
         public async Task<IActionResult> Refresh()
         {
             if (HttpContext.Items["User"] != null) return Accepted(); // still valid => do nothing
@@ -100,13 +101,13 @@ namespace MaintenanceSystem.Controllers
             {
                 var user = await _repo.GetById<Users>(existedToken.UserId);
                 var newSessionToken = _authService.GenerateAccessToken(user!);
-                return Ok(newSessionToken);
+                return Ok(new { access_token = newSessionToken });
             }
         }
         [HttpPost("role")]
         public IActionResult Role()
         {
-            var user = HttpContext.Items["User"] as Users;
+            if (HttpContext.Items["User"] is not Users user) return BadRequest();
             return Ok(new { role = user!.Role == 0 ? "managers" : "users" });
         }
     }
