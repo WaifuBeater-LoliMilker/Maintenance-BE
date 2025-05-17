@@ -46,7 +46,7 @@ namespace MaintenanceSystem.Controllers
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     Expires = DateTime.UtcNow.AddDays(15)
                 });
                 return Ok(res);
@@ -80,7 +80,7 @@ namespace MaintenanceSystem.Controllers
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.Strict,
+                SameSite = SameSiteMode.None,
                 Expires = DateTime.UtcNow.AddDays(-1)
             });
 
@@ -93,10 +93,10 @@ namespace MaintenanceSystem.Controllers
         {
             if (HttpContext.Items["User"] != null) return Accepted(); // still valid => do nothing
             var refreshToken = Request.Cookies["refreshToken"];
-            if (refreshToken == null) return Unauthorized("Không gửi refresh token à??");
+            if (refreshToken == null) return Forbid("Không gửi refresh token à??");
             var existedToken = await _repo.FindModel<RefreshTokens>(t => t.Token == refreshToken);
-            if (existedToken == null) return Unauthorized("Refresh token không có trong db nhé");
-            if (existedToken.ExpireDate < DateTime.UtcNow) return Unauthorized("Đăng nhập lại đê");
+            if (existedToken == null) return Forbid("Refresh token không có trong db nhé");
+            if (existedToken.ExpireDate < DateTime.UtcNow) return Forbid("Đăng nhập lại đê");
             else
             {
                 var user = await _repo.GetById<Users>(existedToken.UserId);
