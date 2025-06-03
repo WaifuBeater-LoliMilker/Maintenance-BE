@@ -78,10 +78,8 @@ public class GenericRepo : IGenericRepo
         try
         {
             var dbSet = _context.Set<T>();
-
             // Lấy danh sách các thực thể thỏa mãn điều kiện (predicate)
             var entities = dbSet.Where(predicate);
-
             // Kiểm tra nếu không có thực thể nào
             if (!entities.Any())
                 return false;
@@ -89,7 +87,6 @@ public class GenericRepo : IGenericRepo
             dbSet.RemoveRange(entities);
 
             await _context.SaveChangesAsync();
-
             return true;
         }
         catch
@@ -121,6 +118,56 @@ public class GenericRepo : IGenericRepo
         var parameters = GetSqlParameters(parameterNames, parameterValues);
         IEnumerable<T> result = await _dbConnection.QueryAsync<T>(procedureName, parameters, commandType: CommandType.StoredProcedure);
         return result.ToList();
+    }
+    // TWO‐result:
+    public async Task<Tuple<List<T1>, List<T2>>> ProcedureToList<T1, T2>(
+        string procedureName,
+        string[] parameterNames,
+        object[] parameterValues
+    ) where T1 : class where T2 : class
+    {
+        var parameters = GetSqlParameters(parameterNames, parameterValues);
+        using var multi = await _dbConnection
+            .QueryMultipleAsync(procedureName, parameters, commandType: CommandType.StoredProcedure);
+
+        var list1 = multi.Read<T1>().ToList();
+        var list2 = multi.Read<T2>().ToList();
+        return Tuple.Create(list1, list2);
+    }
+
+    // THREE‐result:
+    public async Task<Tuple<List<T1>, List<T2>, List<T3>>> ProcedureToList<T1, T2, T3>(
+        string procedureName,
+        string[] parameterNames,
+        object[] parameterValues
+    ) where T1 : class where T2 : class where T3 : class
+    {
+        var parameters = GetSqlParameters(parameterNames, parameterValues);
+        using var multi = await _dbConnection
+            .QueryMultipleAsync(procedureName, parameters, commandType: CommandType.StoredProcedure);
+
+        var list1 = multi.Read<T1>().ToList();
+        var list2 = multi.Read<T2>().ToList();
+        var list3 = multi.Read<T3>().ToList();
+        return Tuple.Create(list1, list2, list3);
+    }
+
+    // FOUR‐result:
+    public async Task<Tuple<List<T1>, List<T2>, List<T3>, List<T4>>> ProcedureToList<T1, T2, T3, T4>(
+        string procedureName,
+        string[] parameterNames,
+        object[] parameterValues
+    ) where T1 : class where T2 : class where T3 : class where T4 : class
+    {
+        var parameters = GetSqlParameters(parameterNames, parameterValues);
+        using var multi = await _dbConnection
+            .QueryMultipleAsync(procedureName, parameters, commandType: CommandType.StoredProcedure);
+
+        var list1 = multi.Read<T1>().ToList();
+        var list2 = multi.Read<T2>().ToList();
+        var list3 = multi.Read<T3>().ToList();
+        var list4 = multi.Read<T4>().ToList();
+        return Tuple.Create(list1, list2, list3, list4);
     }
 
     public async Task<int> ExecuteProcedureAsync(string procedureName, string[] parameterNames, object[] parameterValues)

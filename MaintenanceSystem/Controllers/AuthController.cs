@@ -45,7 +45,7 @@ namespace MaintenanceSystem.Controllers
                 Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = true,
+                    Secure = false,
                     SameSite = SameSiteMode.None,
                     Expires = DateTime.UtcNow.AddDays(15)
                 });
@@ -79,7 +79,7 @@ namespace MaintenanceSystem.Controllers
             Response.Cookies.Append("refreshToken", "", new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
+                Secure = false,
                 SameSite = SameSiteMode.None,
                 Expires = DateTime.UtcNow.AddDays(-1)
             });
@@ -91,18 +91,26 @@ namespace MaintenanceSystem.Controllers
         [SkipJWTMiddleware]
         public async Task<IActionResult> Refresh()
         {
-            if (HttpContext.Items["User"] != null) return Accepted(); // still valid => do nothing
-            var refreshToken = Request.Cookies["refreshToken"];
-            if (refreshToken == null) return Forbid("Không gửi refresh token à??");
-            var existedToken = await _repo.FindModel<RefreshTokens>(t => t.Token == refreshToken);
-            if (existedToken == null) return Forbid("Refresh token không có trong db nhé");
-            if (existedToken.ExpireDate < DateTime.UtcNow) return Forbid("Đăng nhập lại đê");
-            else
+            try
             {
-                var user = await _repo.GetById<Users>(existedToken.UserId);
-                var newSessionToken = _authService.GenerateAccessToken(user!);
-                return Ok(new { access_token = newSessionToken });
+                if (HttpContext.Items["User"] != null) return Accepted(); // still valid => do nothing
+                var refreshToken = Request.Cookies["refreshToken"];
+                if (refreshToken == null) return Forbid();
+                var existedToken = await _repo.FindModel<RefreshTokens>(t => t.Token == refreshToken);
+                if (existedToken == null) return Forbid();
+                if (existedToken.ExpireDate < DateTime.UtcNow) return Forbid();
+                else
+                {
+                    var user = await _repo.GetById<Users>(existedToken.UserId);
+                    var newSessionToken = _authService.GenerateAccessToken(user!);
+                    return Ok(new { access_token = newSessionToken });
+                }
             }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        
         }
         [HttpPost("role")]
         public IActionResult Role()
